@@ -50,10 +50,66 @@ const registerUser = asyncHandler(async (req, res, next) => {
     .status(201)
     .json(new ApiResponse(200, {user, token}, "User registered Successfully"));
 
+});
+
+const loginUser = asyncHandler(async (req, res, next) => {
+
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new ApiError(400, "Please provide all required fields");
+  }
+
+  const user = await User.findOne({ email }).select('+password');
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const isMatch = await user.comparePassword(password);
+
+  if (!isMatch) {
+    throw new ApiError(401, "Invalid credentials");
+  }
+
+  const token = await generateAuthToken(user._id);
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  }
+
+  return res
+    .status(200)
+    .cookie("token", token, options)
+    .json(new ApiResponse(200, {user, token}, "User logged in Successfully"));
 })
 
+const userProfile = asyncHandler(async (req, res, next) => {
+  
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // console.log(user);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "User profile fetched successfully"));
+});
+
+
+const logoutUser = asyncHandler(async (req, res, next) => {
+  res.clearCookie("token");
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "User logged out successfully"));
+});
 
 
 
 
-export {registerUser}
+
+export {registerUser, loginUser, userProfile, logoutUser};
