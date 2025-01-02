@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Captain } from "../models/captain.model.js";
 
 
-const registerCaptain = asyncHandler(async (req, res, next) => {
+const registerCaptain = asyncHandler(async (req, res) => {
     const {fullname: {firstname, lastname}, email, password, vehicle: {color, plate, capacity, vehicleType} } = req.body;
 
     if(!firstname || !email || !password || !color || !plate || !capacity || !vehicleType) {
@@ -35,10 +35,65 @@ const registerCaptain = asyncHandler(async (req, res, next) => {
 
     const token = await captain.generateAuthToken();
 
-    res
+   return res
       .status(200)
       .json(new ApiResponse(200,{ captain, token }, "Captain registered successfully"));
 })
 
+const loginCaptain = asyncHandler(async(req, res) => {
 
-export {registerCaptain};
+   const {email, password} = req.body;
+
+   if(!email || !password){
+    throw new ApiError(400, "Please provide all fields")
+   }
+
+   const captain = await Captain.findOne({email}).select('+password');
+
+   if(!captain){
+    throw new ApiError(404, "Captain not found");
+   }
+
+   const isMatch = await captain.comparePassword(password);
+
+   if(!isMatch){
+    throw new ApiError(401, "Invalid credentials , password");
+   }
+
+   const token = await captain.generateAuthToken();
+
+   const options = {
+     httpOnly: true,
+     secure: true
+   }
+
+   return res
+     .status(200)
+     .cookie("token", token, options)
+     .json(new ApiResponse(200, { captain, token }, "Captain logged in successfully"));
+})
+
+
+const captainProfile = asyncHandler(async (req, res) => {
+  const captain = await Captain.findById(req.captain?._id);
+
+  if(!captain){
+    throw new ApiError(404, "Captain not found");
+  }
+
+  return res
+            .status(200)
+            .json(new ApiResponse(200, captain, "Captain profile fetched successfully"))
+})
+
+
+const logoutCaptain = asyncHandler(async (req, res) => {
+  res.clearCookie("token");
+
+  return res
+    .status(200)
+    .json (new ApiResponse(200, {}, "Captain logged out successfully"));
+})
+
+
+export {registerCaptain, loginCaptain, captainProfile, logoutCaptain};
