@@ -18,5 +18,24 @@ app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/captains", captainRoutes);
 
 
+// 404 Route Handler
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+  });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  res.status(statusCode).json({
+    success: false,
+    message: message,
+  });
+});
+
+
 
 export default app;
