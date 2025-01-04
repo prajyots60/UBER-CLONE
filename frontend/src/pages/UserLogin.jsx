@@ -1,10 +1,19 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+/* eslint-disable no-unused-vars */
+import { useContext, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { UserDataContext } from "../context/UserContext";
 
 function UserLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userData, setUserData] = useState({});
+
+  const {user, setUser} = useContext(UserDataContext);
+
+
+  const navigate = useNavigate();
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -13,8 +22,33 @@ function UserLogin() {
       password: password,
     };
 
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData);
+  
+      console.log(response);
+  
+      if (response.status === 200) {
+        const data = response.data.data;
+        setUser(data.user);
+        localStorage.setItem('token', data.token);
+        toast.success(data.message || "Login successful!");
+        navigate("/home");
+      }
+  
+    } catch (error) {
+      console.log(error);
+      if (error.response) {
+        // Handle specific error messages from the backend
+        toast.error(error.response.data.message || "Login failed. Please try again.");
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
+      
+    }
     setEmail("");
     setPassword("");
+
+
   };
   return (
     <div className="p-7 h-screen flex flex-col justify-between">

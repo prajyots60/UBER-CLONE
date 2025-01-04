@@ -1,5 +1,11 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+/* eslint-disable no-unused-vars */
+import React, { useContext, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from 'axios';
+import toast from "react-hot-toast";
+import  { UserDataContext } from "../context/UserContext";
+
+
 
 
 function UserSignup() {
@@ -7,25 +13,55 @@ function UserSignup() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [userData, setUserData] = useState({});
+  // const [userData, setUserData] = useState({});
 
+
+
+  const navigate = useNavigate();
+
+  const { user, setUser } = useContext(UserDataContext);
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    setUserData({
-      fullName: {
-      firstName: firstName,
-      lastName: lastName,
+    const newUser ={
+      fullname: {
+      firstname: firstName,
+      lastname: lastName,
       },
       email: email,
       password: password
-    })
+    }
+
+    // console.log(newUser);
+
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser)
+  
+      // console.log(response);
+  
+      if(response.status === 201){
+        const data = response.data.data;
+        console.log(data);
+        setUser(data.user);
+        localStorage.setItem('token', data.token);
+        toast.success(data.message || "Signup successful!");
+        navigate('/home');
+      }
+    } catch (error) {
+      if (error.response) {
+        // Handle specific error messages from the backend
+        toast.error(error.response.data.message || "Signup failed. Please try again.");
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
+    }
 
     setFirstName('')
     setLastName('')
     setEmail('')
     setPassword('')
   }
+
  
 
   return (
@@ -84,6 +120,7 @@ function UserSignup() {
                 setPassword(e.target.value)
               }}
               required type="password"
+              minLength={6}
               placeholder='password'
             />
 
