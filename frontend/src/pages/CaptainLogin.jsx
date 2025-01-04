@@ -1,17 +1,45 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
+import { useContext, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import axios from "axios"
+import toast from "react-hot-toast"
+import { CaptainDataContext } from "../context/CaptainContext"
 
 
 function CaptainLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [captainData, setCaptainData] = useState({});
 
+  const navigate = useNavigate()
+
+  const { setCaptain } = useContext(CaptainDataContext);
   const submitHandler = async (e) => {
     e.preventDefault();
-    const captainData ={
+    const captainData = {
       email: email,
       password: password
+    }
+
+    try {
+
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, captainData)
+
+      console.log(response);
+
+      if (response.status === 200) {
+        const data = response.data.data;
+        setCaptain(data.captain);
+        localStorage.setItem('token', data.token);
+        toast.success(data.message || "Login successful!");
+        navigate('/captain-home');
+      }
+    } catch (error) {
+      if (error.response) {
+        // Handle specific error messages from the backend
+        toast.error(error.response.data.message || "Login failed. Please try again.");
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
+      
     }
 
     setEmail('')

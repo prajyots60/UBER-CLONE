@@ -1,5 +1,9 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
+/* eslint-disable no-unused-vars */
+import { useContext, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import axios from 'axios'
+import toast from "react-hot-toast"
+import { CaptainDataContext } from "../context/CaptainContext"
 
 
 function CaptainSignup() {
@@ -14,13 +18,17 @@ function CaptainSignup() {
   const [ vehicleCapacity, setVehicleCapacity ] = useState('')
   const [ vehicleType, setVehicleType ] = useState('')
 
-  const [captain, setCaptain] = useState({});
+  // const [captain, setCaptain] = useState({});
+  
+  const navigate = useNavigate();
+
+  const { captain, setCaptain } = useContext(CaptainDataContext);
 
 
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    setCaptain({
+    const newCaptain =({
       fullname: {
         firstname: firstName,
         lastname: lastName
@@ -34,6 +42,30 @@ function CaptainSignup() {
         vehicleType: vehicleType
       }
     })
+
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/register`, newCaptain)
+
+      console.log(response);
+  
+      if(response.status === 201){
+        const data = response.data.data;
+        console.log(data);
+        setCaptain(data.captain);
+        localStorage.setItem('token', data.token);
+        toast.success(data.message || "CaptainSignup successful!");
+        navigate('/captain-home');
+      }
+    } catch (error) {
+      if (error.response) {
+        // Handle specific error messages from the backend
+        toast.error(error.response.data.message || "CaptainSignup failed. Please try again.");
+      } else {
+        toast.error("An unexpected error occurred. Please try again.");
+      }
+      
+    }
+    
   }
   return (
     <div className='py-5 px-5 h-screen flex flex-col justify-between'>

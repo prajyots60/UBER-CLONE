@@ -36,8 +36,8 @@ const registerCaptain = asyncHandler(async (req, res) => {
     const token = await captain.generateAuthToken();
 
    return res
-      .status(200)
-      .json(new ApiResponse(200,{ captain, token }, "Captain registered successfully"));
+      .status(201)
+      .json(new ApiResponse(201,{ captain, token }, "Captain registered successfully"));
 })
 
 const loginCaptain = asyncHandler(async(req, res) => {
