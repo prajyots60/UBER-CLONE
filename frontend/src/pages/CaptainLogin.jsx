@@ -23,7 +23,7 @@ function CaptainLogin() {
 
       const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`, captainData)
 
-      console.log(response);
+      // console.log(response);
 
       if (response.status === 200) {
         const data = response.data.data;

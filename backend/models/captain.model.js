@@ -78,7 +78,7 @@ captainSchema.pre('save', async function (next) {
 
 captainSchema.methods.generateAuthToken = function () {
     const token = jwt.sign(
-                      { _id: this._id },
+                      { _id: this._id, type: 'captain' },
                       process.env.JWT_SECRET,
                       { expiresIn: '24h' }
                     );
