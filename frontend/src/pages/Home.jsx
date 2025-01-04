@@ -1,8 +1,12 @@
-
+import { Link } from "react-router-dom"
 
 const Home = () => {
   return (
-    <div>Home</div>
+    <div className="home">
+      <div>Home</div>
+      <Link to="/logout">Logout</Link>
+    </div>
+    
   )
 }
 
