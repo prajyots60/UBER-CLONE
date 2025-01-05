@@ -8,6 +8,7 @@ import LocationSearchPanel from "../components/LocationSearchPanel";
 import { useRef, useState } from "react";
 import VehiclePanel from "../components/VehiclePanel";
 import ConfirmRide from "../components/ConfirmRide";
+import LookingForDriver from "../components/LookingForDriver";
 
 const Home = () => {
   const [pickup, setPickup] = useState("");
@@ -19,6 +20,8 @@ const Home = () => {
   const [vehiclePanel, setVehiclePanel] = useState(false);
   const confirmRidePanelRef = useRef(null);
   const [confirmRidePanel, setConfirmRidePanel] = useState(false);
+  const vehicleFoundRef = useRef(null)
+  const [vehicleFound, setVehicleFound] = useState(false);
 
   const submitHandler = (e) => {
     e.preventDefault();
@@ -85,6 +88,21 @@ const Home = () => {
       }
     },
     [confirmRidePanel]
+  );
+
+  useGSAP(
+    function () {
+      if (vehicleFound) {
+        gsap.to(vehicleFoundRef.current, {
+          transform: "translateY(0)",
+        });
+      } else {
+        gsap.to(vehicleFoundRef.current, {
+          transform: "translateY(100%)",
+        });
+      }
+    },
+    [vehicleFound]
   );
 
   return (
@@ -178,7 +196,14 @@ const Home = () => {
           ref={confirmRidePanelRef}
           className="fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-10 pt-12"
         >
-          <ConfirmRide setConfirmRidePanel={setConfirmRidePanel} />
+          <ConfirmRide setConfirmRidePanel={setConfirmRidePanel} setVehicleFound={setVehicleFound} />
+        </div>
+
+        <div
+          ref={vehicleFoundRef}
+          className="fixed w-full z-10 bottom-0 translate-y-full bg-white px-3 py-10 pt-12"
+        >
+          <LookingForDriver setVehicleFound={setVehicleFound} />
         </div>
       </div>
     </div>
